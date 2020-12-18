@@ -1,0 +1,41 @@
+#!/usr/bin/python3
+import sys
+import datetime
+import requests
+
+weatherLst = requests.get('https://wttr.in/?0T').text.split('\n')[2:7]
+sunriseSet = requests.get('https://wttr.in/?format=%F0%9F%8C%84%20%S%09%m%20%s').text.split('\t')
+tidesLst = requests.get('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=9447814&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&format=csv').text.split('\n')
+
+weather = '\t\t\t\t' + sunriseSet[0] + '\n'
+for w in weatherLst:
+    weather = weather + w + '\n'
+
+weather = weather + '\t\t\t\t' + sunriseSet[1]
+
+tides = '\n\n'
+tidesLst[0] = tidesLst[0][:-6]
+for t in tidesLst:
+    t = t.split(' ', 1)[-1]
+    t = t.replace(' ', '')
+    t = t.replace(',', '\t')
+    tides = tides + t + '\n'
+
+
+date = (datetime.date.today() if len(sys.argv) < 2
+        # Expecting filename in YYYY-MM-DD.foo format
+        else sys.argv[1].rsplit(".", 1)[0])
+
+template = """# """ + str(date) + """
+```
+""" + weather + tides + """```
+
+## Todo
+
+## Done
+
+## Notes
+"""
+
+print(template)
+# print(template.format(date=date, weather=weather))
